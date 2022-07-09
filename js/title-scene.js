@@ -18,8 +18,8 @@ class TitleScene extends Phaser.Scene {
     }
 
     update() {
-        this.scene.start('game');
         if (this.spaceKey.isDown) {
+            this.scene.start('game');
         }
     }
 }

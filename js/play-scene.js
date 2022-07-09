@@ -13,11 +13,6 @@ class PlayScene extends Phaser.Scene {
         this.load.image('tomato', 'assets/tomato.png');
         this.load.image('chicken', 'assets/chicken.png');
         this.load.image('pause', 'assets/pause.png');
-
-        this.load.spritesheet('smokeExp', 'assets/smoke.png', {
-            frameWidth: 64,
-            frameHeight: 64
-        });
     }
 
     create() {
@@ -65,14 +60,6 @@ class PlayScene extends Phaser.Scene {
             this.pauseGame();
         })
 
-        this.anims.create({
-            key: 'smoke',
-            frames: this.anims.generateFrameNumbers('smokeExp'),
-            frameRate: 20,
-            repeat: 0,
-            hideOnComplete: true
-        });
-
         this.input.on('gameobjectdown', this.takeIngredient, this);
     }
 
@@ -86,7 +73,7 @@ class PlayScene extends Phaser.Scene {
         this.moveIngredients(this.chicken, 4);
 
         if (!this.prompt.ingredients.length) {
-            console.log('win');
+            this.winGame();
         }
     }
 
@@ -122,17 +109,20 @@ class PlayScene extends Phaser.Scene {
                 this.score += 100;
                 this.scoreText.setText(`Score: ${this.score}`);
                 ingredient.visible = false;
+            } else {
+                this.score -= 50;
+                this.scoreText.setText(`Score: ${this.score}`);
             }
         }
     }
 
-    pauseGame(pointer, gameObj) {
+    pauseGame() {
         this.scene.pause();
         this.scene.launch('pause');
     }
 
-    storeIngredient(ingredient) {
-        ingredient.visible = true;
-        ingredient.setPosition(20, 20);
+    winGame() {
+        this.scene.pause()
+        this.scene.launch('win', this.score);
     }
 }
