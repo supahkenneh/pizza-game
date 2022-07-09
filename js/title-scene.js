@@ -13,14 +13,13 @@ class TitleScene extends Phaser.Scene {
 
         this.title = this.add.sprite(0, 0, 'title');
         this.title.setPosition(this.gameWidth / 2, this.gameHeight / 2);
-        // this.scene.start('game');
 
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
     update() {
+        this.scene.start('game');
         if (this.spaceKey.isDown) {
-            this.scene.start('game');
         }
     }
 }
