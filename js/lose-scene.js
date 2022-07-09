@@ -1,25 +1,22 @@
-class TitleScene extends Phaser.Scene {
+class GameOverScene extends Phaser.Scene {
     constructor() {
-        super('title');
+        super('gameover');
     }
 
     preload() {
-        this.load.image('title', 'assets/title.png');
+        this.load.image('gameover', 'assets/gameover.png');
     }
 
     create() {
         this.gameWidth = this.sys.game.config.width;
         this.gameHeight = this.sys.game.config.height;
-
-        this.title = this.add.sprite(0, 0, 'title');
-        this.title.setPosition(this.gameWidth / 2, this.gameHeight / 2);
-
+        this.add.image(this.gameWidth / 2, this.gameHeight / 2, 'gameover');
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
     update() {
-        this.scene.start('game');
         if (this.spaceKey.isDown) {
+            this.scene.start('title');
         }
     }
 }

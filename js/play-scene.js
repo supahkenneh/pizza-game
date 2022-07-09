@@ -4,7 +4,7 @@ class PlayScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game-bg', 'assets/background.png');
+        this.load.image('game-bg', 'assets/background1.png');
         this.load.image('bacon', 'assets/bacon.png');
         this.load.image('cheese', 'assets/cheese.png');
         this.load.image('dough', 'assets/dough.png');
@@ -12,6 +12,8 @@ class PlayScene extends Phaser.Scene {
         this.load.image('pineapple', 'assets/pineapple.png');
         this.load.image('tomato', 'assets/tomato.png');
         this.load.image('chicken', 'assets/chicken.png');
+        this.load.image('mushroom', 'assets/mushroom.png');
+        this.load.image('bomb', 'assets/bomb.png');
         this.load.image('pause', 'assets/pause.png');
     }
 
@@ -32,27 +34,21 @@ class PlayScene extends Phaser.Scene {
 
 
         // add items
-        this.dough = this.add.sprite(this.gameWidth / 2 - 300, Phaser.Math.Between(0, this.gameHeight / 2), 'dough');
-        this.dough.setScale(0.05);
-        this.dough.setInteractive();
-        this.cheese = this.add.sprite(this.gameWidth / 2 - 200, Phaser.Math.Between(0, this.gameHeight / 2), 'cheese');
-        this.cheese.setScale(0.1);
-        this.cheese.setInteractive();
-        this.bacon = this.add.sprite(this.gameWidth / 2 - 100, Phaser.Math.Between(0, this.gameHeight / 2), 'bacon');
-        this.bacon.setScale(0.1);
-        this.bacon.setInteractive();
-        this.fire = this.add.sprite(this.gameWidth / 2, Phaser.Math.Between(0, this.gameHeight / 2), 'fire');
-        this.fire.setScale(0.25);
-        this.fire.setInteractive();
-        this.tomato = this.add.sprite(this.gameWidth / 2 + 100, Phaser.Math.Between(0, this.gameHeight / 2), 'tomato');
-        this.tomato.setScale(0.025)
-        this.tomato.setInteractive();
-        this.pineapple = this.add.sprite(this.gameWidth / 2 + 200, Phaser.Math.Between(0, this.gameHeight / 2), 'pineapple');
-        this.pineapple.setScale(0.075);
-        this.pineapple.setInteractive();
-        this.chicken = this.add.sprite(this.gameWidth / 2 + 200, Phaser.Math.Between(0, this.gameHeight / 2), 'chicken');
-        this.chicken.setScale(0.075);
-        this.chicken.setInteractive();
+        this.ingredientList = this.add.group();
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'dough', 0.05, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'cheese', 0.1, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'bacon', 0.1, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'fire', 0.25, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'tomato', 0.025, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'pineapple', 0.075, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'chicken', 0.075, Phaser.Math.Between(2, 8)));
+        this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'mushroom', 1, Phaser.Math.Between(2, 8)));
+
+        this.bombs = this.add.group();
+        for (let i = 0; i < 15; i++) {
+            let bomb = new Bomb(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), Phaser.Math.Between(2, 8));
+            this.bombs.add(bomb);
+        };
 
         this.pause = this.add.image(this.gameWidth - 50, 50, 'pause');
         this.pause.setScale(0.25);
@@ -64,13 +60,13 @@ class PlayScene extends Phaser.Scene {
     }
 
     update() {
-        this.moveIngredients(this.dough, 3);
-        this.moveIngredients(this.cheese, 3);
-        this.moveIngredients(this.bacon, 3);
-        this.moveIngredients(this.fire, 6);
-        this.moveIngredients(this.tomato, 3);
-        this.moveIngredients(this.pineapple, 5);
-        this.moveIngredients(this.chicken, 4);
+        for (let i = 0; i < this.ingredientList.getChildren().length; i++) {
+            this.moveIngredients(this.ingredientList.getChildren()[i], this.ingredientList.getChildren()[i].speed)
+        }
+        for (let i = 0; i < this.bombs.getChildren().length; i++) {
+            this.moveIngredients(this.bombs.getChildren()[i], this.bombs.getChildren()[i].speed);
+            this.bombs.getChildren()[i].update();
+        }
 
         if (!this.prompt.ingredients.length) {
             this.winGame();
@@ -82,26 +78,32 @@ class PlayScene extends Phaser.Scene {
             { order: 'Chicken Pizza', ingredients: ['dough', 'cheese', 'tomato', 'chicken'] },
             { order: 'Bacon Pizza', ingredients: ['dough', 'cheese', 'tomato', 'bacon'] },
             { order: 'Pineapple Pizza', ingredients: ['dough', 'cheese', 'tomato', 'pineapple'] },
-            { order: 'Spicy Pizza', ingredients: ['dough', 'cheese', 'tomato', 'fire'] }
+            { order: 'Spicy Pizza', ingredients: ['dough', 'cheese', 'tomato', 'fire'] },
+            { order: 'Mushroom Pizza', ingredients: ['dough', 'cheese', 'tomato', 'mushroom'] }
         ];
 
         return promptArr[Math.floor(Math.random() * promptArr.length)];
     }
 
     moveIngredients(ingredient, speed) {
-        ingredient.y += speed;
-        if (ingredient.y >= this.gameHeight) {
-            this.resetPosition(ingredient);
+        if (ingredient) {
+            ingredient.y += speed;
+            if (ingredient.y >= this.gameHeight) {
+                this.resetPosition(ingredient);
+            }
         }
     }
 
     resetPosition(ingredient) {
-        ingredient.x = Phaser.Math.Between(0, this.gameHeight);
+        ingredient.x = Phaser.Math.Between(0, this.gameWidth);
         ingredient.y = 0;
     }
 
     takeIngredient(pointer, ingredient) {
         if (ingredient.type !== 'Image') {
+            if (ingredient.texture.key === 'bomb') {
+                this.scene.start('gameover');
+            }
             let index = this.prompt.ingredients.indexOf(ingredient.texture.key);
             if (index !== -1) {
                 this.prompt.ingredients.splice(index, 1);
