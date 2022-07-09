@@ -30,7 +30,11 @@ class PlayScene extends Phaser.Scene {
 
         // set prompt
         this.prompt = this.generatePrompt();
-        this.add.text(20, 20, `Order: ${this.prompt}`, { fontSize: '24px', color: 'white' });
+        this.score = 0;
+        this.add.text(20, 20, `Order: ${this.prompt.order}`, { fontSize: '24px', color: 'white' });
+        this.ingredientText = this.add.text(20, 50, `Ingredients Needed: ${this.prompt.ingredients}`, { fontSize: '24px', color: 'white' });
+        this.scoreText = this.add.text(20, 80, `Score: ${this.score}`, { fontSize: '24px', color: 'white' });
+
 
         // add items
         this.dough = this.add.sprite(this.gameWidth / 2 - 300, Phaser.Math.Between(0, this.gameHeight / 2), 'dough');
@@ -69,7 +73,7 @@ class PlayScene extends Phaser.Scene {
             hideOnComplete: true
         });
 
-        this.input.on('gameobjectdown', this.popIngredient, this);
+        this.input.on('gameobjectdown', this.takeIngredient, this);
     }
 
     update() {
@@ -80,10 +84,19 @@ class PlayScene extends Phaser.Scene {
         this.moveIngredients(this.tomato, 3);
         this.moveIngredients(this.pineapple, 5);
         this.moveIngredients(this.chicken, 4);
+
+        if (!this.prompt.ingredients.length) {
+            console.log('win');
+        }
     }
 
     generatePrompt() {
-        let promptArr = ['Chicken Pizza', 'Bacon Pizza', 'Pineapple Pizza'];
+        let promptArr = [
+            { order: 'Chicken Pizza', ingredients: ['dough', 'cheese', 'tomato', 'chicken'] },
+            { order: 'Bacon Pizza', ingredients: ['dough', 'cheese', 'tomato', 'bacon'] },
+            { order: 'Pineapple Pizza', ingredients: ['dough', 'cheese', 'tomato', 'pineapple'] },
+            { order: 'Spicy Pizza', ingredients: ['dough', 'cheese', 'tomato', 'fire'] }
+        ];
 
         return promptArr[Math.floor(Math.random() * promptArr.length)];
     }
@@ -100,15 +113,26 @@ class PlayScene extends Phaser.Scene {
         ingredient.y = 0;
     }
 
-    popIngredient(pointer, ingredient) {
+    takeIngredient(pointer, ingredient) {
         if (ingredient.type !== 'Image') {
-            ingredient.setTexture('smokeExp');
-            ingredient.play('smoke');
+            let index = this.prompt.ingredients.indexOf(ingredient.texture.key);
+            if (index !== -1) {
+                this.prompt.ingredients.splice(index, 1);
+                this.ingredientText.setText(`Ingredients Needed: ${this.prompt.ingredients}`);
+                this.score += 100;
+                this.scoreText.setText(`Score: ${this.score}`);
+                ingredient.visible = false;
+            }
         }
     }
 
     pauseGame(pointer, gameObj) {
         this.scene.pause();
         this.scene.launch('pause');
+    }
+
+    storeIngredient(ingredient) {
+        ingredient.visible = true;
+        ingredient.setPosition(20, 20);
     }
 }
