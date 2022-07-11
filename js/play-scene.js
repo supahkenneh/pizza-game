@@ -25,7 +25,7 @@ class PlayScene extends Phaser.Scene {
         this.gameBg = this.add.tileSprite(0, 0, this.gameWidth, this.gameHeight, 'game-bg');
         this.gameBg.setOrigin(0, 0);
 
-        // set prompt
+        // set prompts
         this.prompt = this.generatePrompt();
         this.score = 0;
         this.add.text(20, 20, `Order: ${this.prompt.order}`, { fontSize: '24px', color: 'white' });
@@ -33,7 +33,7 @@ class PlayScene extends Phaser.Scene {
         this.scoreText = this.add.text(20, 80, `Score: ${this.score}`, { fontSize: '24px', color: 'white' });
 
 
-        // add items
+        // add items as group
         this.ingredientList = this.add.group();
         this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'dough', 0.05, Phaser.Math.Between(2, 8)));
         this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'cheese', 0.1, Phaser.Math.Between(2, 8)));
@@ -43,13 +43,14 @@ class PlayScene extends Phaser.Scene {
         this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'pineapple', 0.075, Phaser.Math.Between(2, 8)));
         this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'chicken', 0.075, Phaser.Math.Between(2, 8)));
         this.ingredientList.add(new Ingredient(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), 'mushroom', 1, Phaser.Math.Between(2, 8)));
-
+        // add bombs as group
         this.bombs = this.add.group();
         for (let i = 0; i < 15; i++) {
             let bomb = new Bomb(this, Phaser.Math.Between(0, this.gameWidth), Phaser.Math.Between(0, this.gameHeight), Phaser.Math.Between(2, 8));
             this.bombs.add(bomb);
         };
 
+        // add pause button and set pause logic
         this.pause = this.add.image(this.gameWidth - 50, 50, 'pause');
         this.pause.setScale(0.25);
         this.pause.setInteractive().on('pointerdown', () => {
@@ -60,19 +61,22 @@ class PlayScene extends Phaser.Scene {
     }
 
     update() {
+        // loop through ingredient group and move ingredient items
         for (let i = 0; i < this.ingredientList.getChildren().length; i++) {
             this.moveIngredients(this.ingredientList.getChildren()[i], this.ingredientList.getChildren()[i].speed)
         }
+        // loop through bombs and move bombs
         for (let i = 0; i < this.bombs.getChildren().length; i++) {
             this.moveIngredients(this.bombs.getChildren()[i], this.bombs.getChildren()[i].speed);
-            this.bombs.getChildren()[i].update();
         }
 
+        // check for win condition
         if (!this.prompt.ingredients.length) {
             this.winGame();
         }
     }
 
+    // generates random prompt for game - pizza type and ingredients needed to be clicked on 
     generatePrompt() {
         let promptArr = [
             { order: 'Chicken Pizza', ingredients: ['dough', 'cheese', 'tomato', 'chicken'] },
@@ -85,6 +89,7 @@ class PlayScene extends Phaser.Scene {
         return promptArr[Math.floor(Math.random() * promptArr.length)];
     }
 
+    // move ingredients, ingredients fall and reset in random x location 
     moveIngredients(ingredient, speed) {
         if (ingredient) {
             ingredient.y += speed;
@@ -94,11 +99,13 @@ class PlayScene extends Phaser.Scene {
         }
     }
 
+    // resets ingredient position to top of screen with random x
     resetPosition(ingredient) {
         ingredient.x = Phaser.Math.Between(0, this.gameWidth);
         ingredient.y = 0;
     }
 
+    // take ingredient or bomb, if bomb then trigger game loss, if ingredient then check if ingredient is in prompt, + score if present, - score if not
     takeIngredient(pointer, ingredient) {
         if (ingredient.type !== 'Image') {
             if (ingredient.texture.key === 'bomb') {
@@ -118,11 +125,13 @@ class PlayScene extends Phaser.Scene {
         }
     }
 
+    // pause game and launch pause scene
     pauseGame() {
         this.scene.pause();
         this.scene.launch('pause');
     }
 
+    // show win scene
     winGame() {
         this.scene.pause()
         this.scene.launch('win', this.score);
